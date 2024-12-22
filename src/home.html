@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TCP Frontend</title>
+</head>
+<body>
+    <h1>Farm Sensor Simulator</h1>
+    <div>
+        <textarea id="messageInput" placeholder="Enter a message"></textarea>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div id="response"></div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:3000'); // Use WebSocket for raw socket communication
+
+        socket.binaryType = 'arraybuffer'; // Set binary type to handle binary data
+
+        socket.onmessage = (event) => {
+            if (event.data instanceof ArrayBuffer) {
+                // Handle binary data here if needed
+                const responseDiv = document.getElementById('response');
+                const textDecoder = new TextDecoder('utf-8');
+                const decodedMessage = textDecoder.decode(event.data);
+                responseDiv.innerHTML += `<p>Server: ${decodedMessage}</p>`;
+            } else {
+                const responseDiv = document.getElementById('response');
+                responseDiv.innerHTML += `<p>Server: ${event.data}</p>`;
+            }
+        };
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+
+            // Convert the message to a byte array
+            const encoder = new TextEncoder('utf-8');
+            const messageData = encoder.encode(message);
+
+            // Send the message as an ArrayBuffer
+            socket.send(messageData);
+
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
